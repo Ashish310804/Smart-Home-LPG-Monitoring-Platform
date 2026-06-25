@@ -1,0 +1,2987 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Saathi - LPG Cylinder Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #f4f7ff 0%, #ffffff 100%);
+      color: #222;
+      padding: 18px;
+    }
+
+    .container {
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 18px 32px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      animation: headerFadeIn 0.8s ease-out;
+    }
+
+    @keyframes headerFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ef2b2b, #c41616);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: bold;
+      border-radius: 8px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(45deg);
+      transition: transform 0.6s ease;
+    }
+
+    .logo:hover::before {
+      transform: rotate(45deg) translate(50%, 50%);
+    }
+
+    .logo:hover {
+      transform: scale(1.08);
+      box-shadow: 0 4px 12px rgba(239, 43, 43, 0.3);
+      background: #d62a2a;
+    }
+
+    .brand h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #2c3e50;
+      margin: 0;
+      background: linear-gradient(135deg, #ef2b2b, #c41616);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand p {
+      color: #666;
+      font-size: 14px;
+      margin: 4px 0 0 0;
+      font-weight: 500;
+    }
+
+    .top-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 180px;
+    }
+
+    .last-reading-card {
+      background: white;
+      border: 1px solid #e1e8ed;
+      border-radius: 8px;
+      padding: 8px 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+
+    .last-reading-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .last-reading-label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .last-reading-value {
+      font-size: 13px;
+      color: #2c3e50;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .menu-container {
+      position: relative;
+    }
+
+    .signin {
+      border: 1px solid #e1e8ed;
+      background: white;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+      font-weight: 500;
+    }
+
+    .signin:hover {
+      border-color: #ef2b2b;
+      box-shadow: 0 4px 12px rgba(239, 43, 43, 0.1);
+      transform: translateY(-1px);
+    }
+
+    section {
+      border: 1px solid #ddd;
+      margin-bottom: 16px;
+      background: white;
+      transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e5e5e5;
+      border-radius: 14px 14px 0 0;
+      background: linear-gradient(180deg, #fafbff 0%, #ffffff 100%);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: background 0.3s ease, border-bottom-color 0.3s ease;
+    }
+
+    .section-title span {
+      color: #5f6f85;
+      font-weight: 500;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title .status-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(44, 155, 101, 0.12);
+      color: #2c9b65;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .content {
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 0 0 14px 14px;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .cylinder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+    }
+
+    .cylinder-card {
+      border: 1px solid #ccc;
+      padding: 18px;
+      min-height: 72px;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+    .cylinder-card.active {
+      border: 2px solid #ef2b2b;
+      background: #fff3f3;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(239, 43, 43, 0.08);
+    }
+
+    .cylinder-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .cylinder-card small {
+      color: #777;
+    }
+
+    .cylinder-card h3 {
+      margin-top: 6px;
+      font-size: 16px;
+    }
+
+    .status-box {
+      display: grid;
+      grid-template-columns: minmax(240px, 320px) 1fr;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .gauge {
+      width: 170px;
+      height: 170px;
+      border: 12px solid #2c9b65;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      margin: auto;
+      transition: border-color 0.4s ease, transform 0.3s ease, box-shadow 0.4s ease;
+      box-shadow: 0 0 0 0 rgba(44, 155, 101, 0.1);
+    }
+
+    .gauge:hover {
+      transform: scale(1.03);
+    }
+
+    .gauge strong {
+      font-size: 42px;
+    }
+
+    .live-summary {
+      text-align: center;
+      margin: 18px auto 0;
+      max-width: 220px;
+    }
+
+    .live-summary .metric-label {
+      color: #777;
+      font-size: 12px;
+    }
+
+    .live-summary .metric-value {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+
+    .live-summary small {
+      display: block;
+      margin-top: 6px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .status-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-label {
+      color: #777;
+      font-size: 12px;
+    }
+
+    .metric-value {
+      font-size: 20px;
+      margin-top: 5px;
+      font-weight: bold;
+    }
+
+    .safety-grid,
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .alert-card {
+      border: 1px solid #ddd;
+      padding: 14px;
+      min-height: 68px;
+      border-radius: 12px;
+      transition: border-color 0.3s ease, background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .alert-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .green {
+      color: #1f9b5f;
+      font-weight: bold;
+    }
+
+    .red {
+      color: #ef2b2b;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      border-top: 1px solid #ddd;
+      border-left: 1px solid #ddd;
+    }
+
+    .metric-card {
+      padding: 16px;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .metric-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #2c9b65;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .metric-card:hover {
+      background: #fafafa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .hours-chart,
+    .usage-box,
+    .line-chart,
+    .history-box {
+      border: 1px solid #ddd;
+      padding: 18px;
+      min-height: 240px;
+      border-radius: 16px;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    .line-chart {
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+    }
+
+    .line-chart svg {
+      width: 100%;
+      height: 160px;
+      min-width: auto;
+      transition: all 0.4s ease;
+    }
+
+    .line-chart::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .line-chart::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .line-chart::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 4px;
+      transition: background 0.2s ease;
+    }
+
+    .line-chart::-webkit-scrollbar-thumb:hover {
+      background: #999;
+    }
+
+    .bars {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 8px;
+      align-items: end;
+      height: 130px;
+      margin-top: 15px;
+      background: linear-gradient(#fff, #f6f6f6);
+      padding: 8px;
+    }
+
+    .hour-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .bar-fill {
+      width: 20px;
+      background: #ef2b2b;
+      border-radius: 10px 10px 0 0;
+      min-height: 10px;
+      transition: background 0.3s ease;
+    }
+
+    .hour-bar span {
+      font-size: 10px;
+      color: #777;
+      writing-mode: horizontal-tb;
+    }
+
+    .daily-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 70px;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+      font-size: 12px;
+    }
+
+    .progress {
+      height: 7px;
+      background: #eee;
+      border-radius: 5px;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    .progress div {
+      height: 100%;
+      background: #ddd;
+      transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin: 8px 0 12px;
+      border-radius: 8px;
+      transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
+    }
+
+    form input:focus,
+    form select:focus {
+      outline: none;
+      border-color: #ef2b2b;
+      box-shadow: 0 0 0 3px rgba(239, 43, 43, 0.1);
+    }
+
+    form button {
+      width: 100%;
+      background: #ef2b2b;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    form button:hover {
+      transform: translateY(-1px);
+      background: #d62a2a;
+    }
+
+    .history-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 14px 16px;
+      transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      background: #fff;
+      min-height: 78px;
+    }
+
+    .history-item.empty {
+      justify-content: center;
+      text-align: center;
+      border-style: dashed;
+      border-color: #d7dde8;
+      color: #606d82;
+      background: #f7f8ff;
+    }
+
+    .history-item:hover {
+      background: #f8f9ff;
+      border-color: #dfe3ee;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .history-item .edit-btn {
+      cursor: pointer;
+      color: #2c9b65;
+      transition: color 0.2s ease, transform 0.2s ease;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .history-item .edit-btn:hover {
+      color: #1f7a4d;
+      transform: scale(1.1);
+    }
+
+    .history-item .delete-btn {
+      cursor: pointer;
+      color: #ef2b2b;
+      transition: color 0.2s ease, transform 0.2s ease, text-shadow 0.2s ease;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .history-item .delete-btn:hover {
+      color: #c41616;
+      transform: scale(1.2) rotate(90deg);
+      text-shadow: 0 2px 4px rgba(239, 43, 43, 0.2);
+    }
+
+    .history-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .history-controls button {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 4px 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      color: #666;
+    }
+
+    .history-controls button:hover {
+      background: #f0f0f0;
+      border-color: #bbb;
+      transform: scale(1.05);
+    }
+
+    svg {
+      width: 100%;
+      height: 150px;
+    }
+
+    footer {
+      border-top: 1px solid #ddd;
+      padding: 18px 0;
+      margin-top: 25px;
+      color: #666;
+      font-size: 12px;
+      transition: color 0.25s ease, border-color 0.25s ease;
+    }
+
+    /* Menu Styles */
+    .menu-container {
+      position: relative;
+    }
+
+    .menu-btn {
+      background: white;
+      border: 1px solid #ccc;
+      padding: 8px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .menu-btn:hover {
+      background: #f5f5f5;
+      border-color: #999;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .menu-btn:active {
+      transform: translateY(1px);
+    }
+
+    .menu-dropdown {
+      position: absolute;
+      top: 44px;
+      right: 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      box-shadow: 0 12px 26px rgba(0,0,0,0.16);
+      min-width: 260px;
+      width: min(280px, 100vw - 32px);
+      z-index: 1000;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+    }
+
+    .menu-dropdown.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .menu-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.25s ease, padding-left 0.25s ease;
+    }
+
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .menu-item:hover {
+      background: #f9f9f9;
+    }
+
+    .menu-item.divider {
+      border-bottom: 1px solid #ddd;
+      padding: 0;
+      margin: 4px 0;
+      min-height: 1px;
+      cursor: default;
+    }
+
+    .menu-item.divider:hover {
+      background: white;
+    }
+
+    .toggle-switch {
+      width: 40px;
+      height: 22px;
+      background: #ccc;
+      border-radius: 11px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+      margin-left: auto;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-switch:hover {
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+
+    .toggle-switch.active {
+      background: #2c9b65;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .toggle-switch.active::after {
+      left: 20px;
+    }
+
+    .user-section {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      background: #f9f9f9;
+    }
+
+    .user-name {
+      font-weight: bold;
+      color: #222;
+      font-size: 13px;
+    }
+
+    .user-email {
+      color: #777;
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+      transform: translateY(-8px);
+      opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .modal-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 16px;
+      color: #222;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: #ef2b2b;
+      box-shadow: 0 0 0 2px rgba(239, 43, 43, 0.1);
+    }
+
+    .modal-checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #444;
+      margin-bottom: 12px;
+    }
+
+    .modal-checkbox-row input {
+      width: 16px;
+      height: 16px;
+      accent-color: #ef2b2b;
+    }
+
+    .auth-message {
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.5;
+    }
+
+    .modal-input.invalid {
+      border-color: #ef2b2b;
+      background: #fff5f5;
+    }
+
+    .modal-btn[disabled] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .modal-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.25s ease;
+    }
+
+    .modal-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-btn:active {
+      transform: translateY(0);
+    }
+
+    .modal-btn-primary {
+      background: #ef2b2b;
+      color: white;
+      box-shadow: 0 2px 8px rgba(239, 43, 43, 0.2);
+    }
+
+    .modal-btn-primary:hover {
+      background: #d62a2a;
+      box-shadow: 0 6px 16px rgba(239, 43, 43, 0.3);
+    }
+
+    .modal-btn-secondary {
+      background: #eee;
+      color: #222;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .modal-btn-secondary:hover {
+      background: #ddd;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Dark Mode */
+    body.dark-mode {
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode header {
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode section {
+      background: #222;
+      border-color: #333;
+    }
+
+    body.dark-mode .section-title {
+      border-bottom-color: #333;
+    }
+
+    body.dark-mode .cylinder-card {
+      border-color: #444;
+      background: #2a2a2a;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .cylinder-card.active {
+      background: #3d1111;
+      border-color: #ef2b2b;
+    }
+
+    body.dark-mode .gauge {
+      border-color: #2c9b65;
+    }
+
+    body.dark-mode .status-details {
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .metric-label {
+      color: #aaa;
+    }
+
+    body.dark-mode .progress-bar {
+      background: #333;
+    }
+
+    body.dark-mode .progress-fill {
+      background: #2c9b65;
+    }
+
+    body.dark-mode .alert-card {
+      background: #2a2a2a;
+      border-color: #333;
+    }
+
+    body.dark-mode .bars {
+      background: linear-gradient(#222, #1a1a1a);
+    }
+
+    body.dark-mode .progress {
+      background: #333;
+    }
+
+    body.dark-mode form input {
+      background: #2a2a2a;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .menu-dropdown {
+      background: #2a2a2a;
+      border-color: #444;
+    }
+
+    body.dark-mode .menu-item {
+      border-color: #333;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .menu-item:hover {
+      background: #333;
+    }
+
+    body.dark-mode .user-section {
+      background: #333;
+      border-color: #444;
+    }
+
+    body.dark-mode .modal {
+      background: #222;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .modal-input {
+      background: #333;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode footer {
+      border-color: #333;
+      color: #aaa;
+    }
+
+    @media (max-width: 760px) {
+      header {
+        align-items: flex-start;
+      }
+
+      .top-info {
+        width: 100%;
+        text-align: left;
+        font-size: 11px;
+      }
+
+      .menu-container {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .section-title {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .cylinder-grid,
+      .metrics-grid,
+      .safety-grid,
+      .bottom-grid,
+      .status-box,
+      .status-details {
+        grid-template-columns: 1fr;
+      }
+
+      .gauge {
+        width: 120px;
+        height: 120px;
+      }
+
+      .section-title,
+      .content,
+      .alert-card,
+      .metric-card,
+      .hours-chart,
+      .usage-box,
+      .line-chart,
+      .history-box {
+        border-radius: 14px;
+      }
+
+      .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 12px;
+      }
+
+      header {
+        gap: 10px;
+      }
+
+      .brand h1 {
+        font-size: 22px;
+      }
+
+      .top-info {
+        font-size: 11px;
+      }
+
+      .section-title {
+        font-size: 13px;
+      }
+
+      .gauge {
+        width: 110px;
+        height: 110px;
+      }
+
+      .menu-dropdown {
+        right: 0;
+        left: 0;
+        min-width: auto;
+        width: calc(100vw - 36px);
+      }
+
+      .modal {
+        padding: 20px;
+      }
+    }
+
+    /* Chatbox Styles */
+    .chatbox-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 360px;
+      height: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.8) translateY(20px);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 998;
+    }
+
+    .chatbox-container.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+    } 
+
+    body.dark-mode .chatbox-container {
+      background: #222;
+      color: #e0e0e0;
+    }
+
+    .chatbox-header {
+      background: linear-gradient(135deg, #ef2b2b, #c41616);
+      color: white;
+      padding: 16px;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(239, 43, 43, 0.2);
+    }
+
+    .chatbox-header h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .chatbox-close {
+      cursor: pointer;
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      transition: transform 0.2s ease;
+    }
+
+    .chatbox-close:hover {
+      transform: scale(1.2) rotate(90deg);
+    }
+
+    .chatbox-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #fafafa;
+    }
+
+    body.dark-mode .chatbox-messages {
+      background: #1a1a1a;
+    }
+
+    .chatbox-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .chatbox-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chatbox-messages::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
+    .chatbox-messages::-webkit-scrollbar-thumb:hover {
+      background: #999;
+    }
+
+    .chat-message {
+      display: flex;
+      gap: 8px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chat-message.user {
+      justify-content: flex-end;
+    }
+
+    .chat-bubble {
+      max-width: 70%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    .chat-message.bot .chat-bubble {
+      background: #e0e0e0;
+      color: #222;
+      border-radius: 10px 10px 10px 0;
+    }
+
+    body.dark-mode .chat-message.bot .chat-bubble {
+      background: #333;
+      color: #e0e0e0;
+    }
+
+    .chat-message.user .chat-bubble {
+      background: #ef2b2b;
+      color: white;
+      border-radius: 10px 10px 0 10px;
+    }
+
+    .chatbox-input-area {
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 8px;
+      background: white;
+      border-radius: 0 0 12px 12px;
+    }
+
+    body.dark-mode .chatbox-input-area {
+      background: #222;
+      border-color: #333;
+    }
+
+    .chatbox-input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 13px;
+      resize: none;
+      font-family: Inter, Arial, sans-serif;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.dark-mode .chatbox-input {
+      background: #333;
+      border-color: #444;
+      color: #e0e0e0;
+    }
+
+    .chatbox-input:focus {
+      outline: none;
+      border-color: #ef2b2b;
+      box-shadow: 0 0 0 2px rgba(239, 43, 43, 0.1);
+    }
+
+    .chatbox-send-btn {
+      padding: 10px 12px;
+      background: #ef2b2b;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chatbox-send-btn:hover {
+      background: #d62a2a;
+      transform: translateY(-1px);
+    }
+
+    .chatbox-send-btn:active {
+      transform: translateY(0);
+    }
+
+    .chatbox-toggle-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ef2b2b, #c41616);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(239, 43, 43, 0.3);
+      transition: all 0.3s ease;
+      z-index: 997;
+    }
+
+    .chatbox-toggle-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(239, 43, 43, 0.4);
+    }
+
+    .chatbox-toggle-btn:active {
+      transform: scale(0.95);
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 96px;
+      min-width: 260px;
+      max-width: calc(100vw - 48px);
+      padding: 14px 18px;
+      border-radius: 14px;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(14px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+      z-index: 1001;
+      pointer-events: none;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .toast.success {
+      background: rgba(44, 155, 101, 0.96);
+    }
+
+    .toast.error {
+      background: rgba(239, 43, 43, 0.96);
+    }
+
+    .toast.info {
+      background: rgba(44, 136, 198, 0.96);
+    }
+
+    .status-pill.red {
+      background: rgba(239, 43, 43, 0.12);
+      color: #ef2b2b;
+    }
+
+    .chatbox-toggle-btn.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0);
+    }
+
+    @media (max-width: 520px) {
+      .chatbox-container {
+        width: calc(100vw - 24px);
+        height: 60vh;
+        bottom: 12px;
+        right: 12px;
+        max-height: 500px;
+      }
+
+      .chatbox-toggle-btn {
+        bottom: 12px;
+        right: 12px;
+      }
+
+      .chat-bubble {
+        max-width: 85%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">S</div>
+        <div>
+          <h1>Saathi</h1>
+          <p>Cylinder pressure · daily usage · leak alerts</p>
+        </div>
+      </div>
+      <div class="top-info">
+        <div class="last-reading-card">
+          <div class="last-reading-label">Last reading</div>
+          <div class="last-reading-value" id="lastReadingText">Apr 25, 10:58 AM</div>
+        </div>
+        <div class="menu-container">
+          <button class="menu-btn" onclick="toggleMenu()">☰</button>
+          <div class="menu-dropdown" id="menuDropdown">
+            <div class="user-section" id="userSection" style="display:none;">
+              <div class="user-name" id="userName">Guest User</div>
+              <div class="user-email" id="userEmail">guest@example.com</div>
+            </div>
+            <div id="signInItem" class="menu-item" onclick="openSignInModal()">
+              <span>🔐</span>
+              <span>Sign in</span>
+            </div>
+            <div id="signOutItem" class="menu-item" onclick="signOut()" style="display:none;">
+              <span>🚪</span>
+              <span>Sign out</span>
+            </div>
+            <div class="menu-item divider"></div>
+            <div class="menu-item" onclick="toggleDarkMode()">
+              <span>🌙</span>
+              <span>Dark mode</span>
+              <div class="toggle-switch" id="darkModeToggle"></div>
+            </div>
+            <div class="menu-item" onclick="openSettingsModal()">
+              <span>⚙️</span>
+              <span>Settings</span>
+            </div>
+            <div class="menu-item" onclick="openAboutModal()">
+              <span>ℹ️</span>
+              <span>About</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="section-title">Cylinder size <span id="selectedWeight">14.2 kg</span></div>
+      <div class="content cylinder-grid">
+        <div class="cylinder-card" onclick="selectCylinder(this, 5)"><small>Portable</small><h3>5 kg</h3></div>
+        <div class="cylinder-card active" onclick="selectCylinder(this, 14.2)"><small>Domestic</small><h3>14.2 kg</h3></div>
+        <div class="cylinder-card" onclick="selectCylinder(this, 19)"><small>Commercial</small><h3>19 kg</h3></div>
+        <div class="cylinder-card" onclick="selectCylinder(this, 47.5)"><small>Industrial</small><h3>47.5 kg</h3></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">Live status <span class="status-pill green">Full</span></div>
+      <div class="content status-box">
+        <div class="gauge">
+          <strong id="percent">100%</strong>
+          <span id="weightText">0 kg left</span>
+        </div>
+        <div class="live-summary">
+          <div class="metric-label">Latest reading</div>
+          <div class="metric-value" id="latestReadingText">12.00 bar</div>
+          <small id="latestReadingAge">Updated just now</small>
+        </div>
+        <div class="status-details">
+          <div><div class="metric-label">Pressure</div><div class="metric-value" id="pressure">12.00 bar</div><small>Usage rate —</small></div>
+          <div><div class="metric-label">Remaining</div><div class="metric-value" id="remaining">14.20 kg</div><small>Status Full</small></div>
+          <div><div class="metric-label">Leak status</div><div class="metric-value green">No leak</div><small>Pressure stable</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">Forecast & safety</div>
+      <div class="content safety-grid">
+        <div class="alert-card red">Estimated end date<br /><b>Need more readings</b></div>
+        <div class="alert-card green">● No leak detected<br /><small>Pressure is stable.</small></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">Key metrics <span class="status-pill">4 entries</span></div>
+      <div class="metrics-grid">
+        <div class="metric-card"><span class="metric-icon">📈</span><div class="metric-label">Usage rate</div><div class="metric-value">—</div><small>kg/day</small></div>
+        <div class="metric-card"><span class="metric-icon">⛽</span><div class="metric-label">Gas left</div><div class="metric-value">14.20</div><small>of 14.2 kg</small><div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div></div>
+        <div class="metric-card"><span class="metric-icon">📉</span><div class="metric-label">Recent drop</div><div class="metric-value">0.00</div><small>bar in 30 min</small></div>
+        <div class="metric-card"><span class="metric-icon">📊</span><div class="metric-label">Avg pressure</div><div class="metric-value">13.25</div><small>bar · 4 logs</small></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title">Last 12 hours <span>Avg pressure per hour</span></div>
+      <div class="content hours-chart">
+        <div class="bars">
+          <div class="hour-bar"><div class="bar-fill" style="height: 40%"></div><span>1AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 50%"></div><span>2AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 30%"></div><span>3AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 60%"></div><span>4AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 45%"></div><span>5AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 55%"></div><span>6AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 35%"></div><span>7AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 60%"></div><span>8AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 50%"></div><span>9AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 40%"></div><span>10AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 55%"></div><span>11AM</span></div>
+          <div class="hour-bar"><div class="bar-fill" style="height: 45%"></div><span>12PM</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bottom-grid">
+      <section>
+        <div class="section-title">Daily usage</div>
+        <div class="content usage-box">
+          <p><b>Last 7 days</b> <span style="float:right">0.00 kg total</span></p>
+          <div id="dailyUsage"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">Pressure over time <span id="chartReadingCount" style="color: #777; font-weight: normal; font-size: 12px;">4 readings</span></div>
+        <div class="content line-chart" id="lineChartContainer">
+          <svg id="pressureChart" viewBox="0 0 400 150" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#ef2b2b;stop-opacity:0.1" />
+                <stop offset="100%" style="stop-color:#ef2b2b;stop-opacity:0" />
+              </linearGradient>
+            </defs>
+            <line x1="30" y1="120" x2="380" y2="120" stroke="#ddd" stroke-width="1" />
+            <line x1="30" y1="80" x2="380" y2="80" stroke="#eee" stroke-width="1" />
+            <line x1="30" y1="40" x2="380" y2="40" stroke="#eee" stroke-width="1" />
+            <polyline id="chartLine" points="30,75 120,55 230,55 330,58 380,82" fill="none" stroke="#ef2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+            <polygon id="chartArea" points="30,75 120,55 230,55 330,58 380,82 380,120 30,120" fill="url(#chartGradient)" />
+          </svg>
+        </div>
+      </section>
+    </div>
+
+    <div class="bottom-grid">
+      <section>
+        <div class="section-title">Add a reading</div>
+        <div class="content">
+          <form onsubmit="saveReading(event)">
+            <label>Pressure (bar) <small style="color:#777;">0-20 bar range</small></label>
+            <input id="pressureInput" type="number" step="0.01" min="0" max="20" value="6.42" />
+            <label>When</label>
+            <input id="dateInput" type="datetime-local" />
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+              <button type="submit">Save reading</button>
+              <button type="button" onclick="addCurrentReading()" style="background: #666; color: white;">Add current reading</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-title">
+          History <span>4 entries</span>
+          <div class="history-controls">
+            <button onclick="toggleHistorySort()" title="Sort by date/pressure">🔄</button>
+            <button onclick="exportHistory()" title="Export history">📤</button>
+            <button onclick="clearHistory()" title="Clear all history">🗑️</button>
+          </div>
+        </div>
+        <div class="content history-box" id="history">
+          <div class="history-item">
+            <div><b>12.00 bar</b><br /><small>Apr 24, 10:50 AM</small></div>
+            <div class="history-actions">
+              <span class="edit-btn" onclick="editReading(this)" title="Edit">✏️</span>
+              <span class="delete-btn" onclick="deleteReading(this)">×</span>
+            </div>
+          </div>
+          <div class="history-item">
+            <div><b>14.00 bar</b><br /><small>Apr 23, 10:49 AM</small></div>
+            <div class="history-actions">
+              <span class="edit-btn" onclick="editReading(this)" title="Edit">✏️</span>
+              <span class="delete-btn" onclick="deleteReading(this)">×</span>
+            </div>
+          </div>
+          <div class="history-item">
+            <div><b>14.10 bar</b><br /><small>Apr 23, 10:49 AM</small></div>
+            <div class="history-actions">
+              <span class="edit-btn" onclick="editReading(this)" title="Edit">✏️</span>
+              <span class="delete-btn" onclick="deleteReading(this)">×</span>
+            </div>
+          </div>
+          <div class="history-item">
+            <div><b>12.90 bar</b><br /><small>Apr 22, 10:50 AM</small></div>
+            <div class="history-actions">
+              <span class="edit-btn" onclick="editReading(this)" title="Edit">✏️</span>
+              <span class="delete-btn" onclick="deleteReading(this)">×</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <b>Saathi</b> — a personal LPG cylinder tracker. Log pressure readings, watch daily kg usage, get leak alerts, and forecast when your cylinder will run out.
+      <br />Created by Ashish Dwivedi · LinkedIn
+    </footer>
+  </div>
+
+  <!-- Sign In Modal -->
+  <div class="modal-overlay" id="signInModal">
+    <div class="modal">
+      <div class="modal-header">Sign In to Saathi</div>
+      <div class="auth-message" id="signInMessage">Enter your email and password to sync readings and personalize your dashboard.</div>
+      <input type="email" class="modal-input" id="emailInput" placeholder="Email address" />
+      <input type="password" class="modal-input" id="passwordInput" placeholder="Password" />
+      <label class="modal-checkbox-row">
+        <input type="checkbox" id="rememberMeCheckbox" /> Remember me
+      </label>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal('signInModal')">Cancel</button>
+        <button class="modal-btn modal-btn-primary" id="signInButton" onclick="handleSignIn()">Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">Settings</div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Notification Frequency</label>
+        <select class="modal-input" id="notificationFreq" style="cursor: pointer;">
+          <option value="hourly">Hourly</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="never">Never</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Auto-sync readings</label>
+        <select class="modal-input" id="autoSync" style="cursor: pointer;">
+          <option value="true">Enabled</option>
+          <option value="false">Disabled</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Cylinder refill reminder</label>
+        <select class="modal-input" id="refillReminder" style="cursor: pointer;">
+          <option value="3 days">3 days before</option>
+          <option value="7 days">7 days before</option>
+          <option value="14 days">14 days before</option>
+          <option value="never">Never</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Leak Alert Threshold (bar/hour)</label>
+        <input type="number" class="modal-input" id="leakThreshold" value="2.0" step="0.1" />
+      </div>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: bold; margin-bottom: 8px;">Low Pressure Alert (bar)</label>
+        <input type="number" class="modal-input" id="lowPressureAlert" value="5.0" step="0.1" />
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-secondary" onclick="closeModal('settingsModal')">Cancel</button>
+        <button class="modal-btn modal-btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal">
+      <div class="modal-header">About Saathi</div>
+      <div style="font-size: 13px; line-height: 1.6; color: #666;">
+        <p><b>Saathi v1.0</b></p>
+        <p style="margin-top: 12px;">A personal LPG cylinder tracker that helps you:</p>
+        <ul style="margin: 12px 0 12px 20px;">
+          <li>Log pressure readings</li>
+          <li>Track daily kg usage</li>
+          <li>Get leak alerts</li>
+          <li>Forecast when your cylinder will run out</li>
+        </ul>
+        <p style="margin-top: 12px; border-top: 1px solid #eee; padding-top: 12px;">
+          Created by <b>Ashish Dwivedi</b><br />
+          <a href="#" style="color: #ef2b2b; text-decoration: none;">LinkedIn Profile</a>
+        </p>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-primary" onclick="closeModal('aboutModal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbox -->
+  <button class="chatbox-toggle-btn" id="chatboxToggleBtn" onclick="toggleChatbox()" title="Open chat">💬</button>
+  
+  <div class="chatbox-container" id="chatboxContainer">
+    <div class="chatbox-header">
+      <h3>Support Chat</h3>
+      <button class="chatbox-close" onclick="toggleChatbox()">×</button>
+    </div>
+    <div class="chatbox-messages" id="chatboxMessages">
+      <div class="chat-message bot">
+        <div class="chat-bubble">Hi there! 👋 I'm here to help with your Saathi cylinder tracker. What can I assist you with?</div>
+      </div>
+    </div>
+    <div class="chatbox-input-area">
+      <input type="text" class="chatbox-input" id="chatboxInput" placeholder="Type your message..." onkeypress="handleChatKeypress(event)" />
+      <button class="chatbox-send-btn" onclick="sendChatMessage()" title="Send">➤</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // State Management
+    let appState = {
+      selectedWeight: 14.2,
+      currentPressure: 12.00,
+      maxPressure: 15.0,
+      readings: [], // will load from server
+      storageKey: 'saathiAppState',
+      isLoggedIn: false,
+      rememberMe: false,
+      userName: 'Guest User',
+      userEmail: 'guest@example.com',
+      darkMode: localStorage.getItem('darkMode') === 'true',
+      iotConnected: false,
+      settings: {
+        notificationFreq: localStorage.getItem('notificationFreq') || 'daily',
+        autoSync: localStorage.getItem('autoSync') === 'true',
+        refillReminder: localStorage.getItem('refillReminder') || '7 days',
+        leakThreshold: parseFloat(localStorage.getItem('leakThreshold')) || 2.0,
+        lowPressureAlert: parseFloat(localStorage.getItem('lowPressureAlert')) || 5.0
+      }
+    };
+
+    // Initialize
+    async function initialize() {
+      loadAppState();
+      await loadReadings();
+      document.getElementById('dateInput').value = new Date().toISOString().slice(0, 16);
+      renderHistory();
+      restoreSelectedCylinder();
+      generateDailyUsage();
+      updateGaugeDisplay();
+      attachHistoryDeleteHandlers();
+      generatePressureChart();
+      updateLastReadingDisplay();
+      updateAuthUI();
+      
+      // Apply dark mode if enabled
+      if (appState.darkMode) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('darkModeToggle').classList.add('active');
+      }
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(event) {
+        const menu = document.getElementById('menuDropdown');
+        const menuBtn = document.querySelector('.menu-btn');
+        if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
+          menu.classList.remove('active');
+        }
+      });
+    }
+
+    // Load Readings from Server
+    async function loadReadings() {
+      try {
+        const response = await fetch('/api/readings');
+        const readings = await response.json();
+        appState.readings = readings.map(r => ({ ...r, date: new Date(r.date) }));
+        appState.readings.sort((a, b) => b.date - a.date);
+        if (appState.readings.length > 0) {
+          appState.currentPressure = appState.readings[0].pressure;
+        }
+        if (appState.readings.length === 0) {
+          // Add default readings if none
+          appState.readings = [
+            { pressure: 12.00, date: new Date(Date.now() - 14 * 60000) },
+            { pressure: 14.00, date: new Date(Date.now() - 1440 * 60000) },
+            { pressure: 14.10, date: new Date(Date.now() - 1440 * 60000) },
+            { pressure: 12.90, date: new Date(Date.now() - 2880 * 60000) }
+          ];
+          await saveReadingsToServer();
+        }
+        saveAppState();
+      } catch (error) {
+        console.error('Failed to load readings:', error);
+        // Fallback to localStorage or defaults
+        const saved = localStorage.getItem(appState.storageKey);
+      const backupReadings = [
+        { pressure: 12.00, date: new Date(Date.now() - 14 * 60000) },
+        { pressure: 14.00, date: new Date(Date.now() - 1440 * 60000) },
+        { pressure: 14.10, date: new Date(Date.now() - 1440 * 60000) },
+        { pressure: 12.90, date: new Date(Date.now() - 2880 * 60000) }
+      ];
+      const fallback = saved ? JSON.parse(saved).readings || backupReadings : backupReadings;
+      appState.readings = fallback.map(r => ({ ...r, date: new Date(r.date) }));
+      appState.readings.sort((a, b) => b.date - a.date);
+      if (appState.readings.length > 0) {
+        appState.currentPressure = appState.readings[0].pressure;
+      }
+      }
+    }
+
+    // Save Readings to Server
+    async function saveReadingsToServer() {
+      for (const reading of appState.readings) {
+        try {
+          await fetch('/api/readings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pressure: reading.pressure, date: reading.date.toISOString() })
+          });
+        } catch (error) {
+          console.error('Failed to save reading:', error);
+        }
+      }
+    }
+
+    // Update Last Reading Display
+    function updateLastReadingDisplay() {
+      if (appState.readings.length > 0) {
+        const latestReading = appState.readings[0];
+        const timeStr = latestReading.date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        const lastReadingText = document.getElementById('lastReadingText');
+        if (lastReadingText) {
+          lastReadingText.innerHTML = `Last reading<br />${timeStr}`;
+        }
+      }
+    }
+
+    function loadAppState() {
+      const saved = localStorage.getItem(appState.storageKey);
+      if (!saved) return;
+      try {
+        const stored = JSON.parse(saved);
+
+        if (typeof stored.selectedWeight === 'number') appState.selectedWeight = stored.selectedWeight;
+        if (typeof stored.currentPressure === 'number') appState.currentPressure = stored.currentPressure;
+        if (typeof stored.iotConnected === 'boolean') appState.iotConnected = stored.iotConnected;
+        if (typeof stored.isLoggedIn === 'boolean') appState.isLoggedIn = stored.isLoggedIn;
+        if (stored.userName) appState.userName = stored.userName;
+        if (stored.userEmail) appState.userEmail = stored.userEmail;
+        if (typeof stored.darkMode === 'boolean') appState.darkMode = stored.darkMode;
+        if (typeof stored.rememberMe === 'boolean') appState.rememberMe = stored.rememberMe;
+        if (!appState.rememberMe) {
+          appState.isLoggedIn = false;
+          appState.userName = 'Guest User';
+          appState.userEmail = 'guest@example.com';
+        }
+        if (stored.settings) appState.settings = { ...appState.settings, ...stored.settings };
+        if (Array.isArray(stored.readings)) {
+          appState.readings = stored.readings.map(r => ({ ...r, date: new Date(r.date) }));
+        }
+      } catch (error) {
+        console.warn('Failed to restore saved app state', error);
+      }
+    }
+
+    function saveAppState() {
+      try {
+        const stored = {
+          selectedWeight: appState.selectedWeight,
+          currentPressure: appState.currentPressure,
+          isLoggedIn: appState.isLoggedIn,
+          rememberMe: appState.rememberMe,
+          userName: appState.userName,
+          userEmail: appState.userEmail,
+          darkMode: appState.darkMode,
+          iotConnected: appState.iotConnected,
+          settings: appState.settings,
+          readings: appState.readings.map(r => ({ ...r, date: r.date.toISOString() }))
+        };
+        localStorage.setItem(appState.storageKey, JSON.stringify(stored));
+      } catch (error) {
+        console.warn('Failed to save app state', error);
+      }
+    }
+
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function renderHistory() {
+      const history = document.getElementById('history');
+      history.innerHTML = '';
+
+      if (appState.readings.length === 0) {
+        history.innerHTML = `
+          <div class="history-item empty">
+            <div>
+              <b>No readings yet</b><br />
+              <small>Add a pressure reading to get started and see your dashboard come alive.</small>
+            </div>
+          </div>`;
+        const span = document.querySelector('.history-box').closest('section').querySelector('.section-title span');
+        if (span) span.innerText = '0 entries';
+        return;
+      }
+
+      // Sort readings based on current sortOrder
+      const sortedReadings = [...appState.readings].sort((a, b) => {
+        switch (sortOrder) {
+          case 'date-desc':
+            return b.date - a.date;
+          case 'date-asc':
+            return a.date - b.date;
+          case 'pressure-desc':
+            return b.pressure - a.pressure;
+          case 'pressure-asc':
+            return a.pressure - b.pressure;
+          default:
+            return 0;
+        }
+      });
+
+      sortedReadings.forEach(reading => {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        const timeStr = reading.date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          meridiem: 'short'
+        });
+        item.innerHTML = `
+          <div><b>${reading.pressure.toFixed(2)} bar</b><br /><small>${timeStr}</small></div>
+          <div class="history-actions">
+            <span class="edit-btn" onclick="editReading(this)" title="Edit">✏️</span>
+            <span class="delete-btn" onclick="deleteReading(this)">×</span>
+          </div>`;
+        history.appendChild(item);
+      });
+
+      const span = document.querySelector('.history-box').closest('section').querySelector('.section-title span');
+      if (span) span.innerText = appState.readings.length + ' entries';
+    }
+
+    function restoreSelectedCylinder() {
+      const card = Array.from(document.querySelectorAll('.cylinder-card')).find(c => c.innerText.includes(appState.selectedWeight + ' kg'));
+      if (card) {
+        selectCylinder(card, appState.selectedWeight);
+      }
+    }
+
+    // Menu Toggle
+    function toggleMenu() {
+      const menu = document.getElementById('menuDropdown');
+      menu.classList.toggle('active');
+    }
+
+    // Close Menu
+    function closeMenu() {
+      document.getElementById('menuDropdown').classList.remove('active');
+    }
+
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.className = `toast ${type}`;
+      toast.classList.add('visible');
+      clearTimeout(window.saathiToastTimer);
+      window.saathiToastTimer = setTimeout(() => {
+        toast.classList.remove('visible');
+      }, 3200);
+    }
+
+    function openSignInModal() {
+      openModal('signInModal');
+      document.getElementById('signInMessage').style.color = '#555';
+      document.getElementById('signInMessage').innerText = 'Enter your email and password to sync readings and personalize your dashboard.';
+      document.getElementById('signInButton').disabled = false;
+      document.getElementById('emailInput').classList.remove('invalid');
+      document.getElementById('passwordInput').classList.remove('invalid');
+      document.getElementById('rememberMeCheckbox').checked = false;
+      closeMenu();
+    }
+
+    function openSettingsModal() {
+      document.getElementById('notificationFreq').value = appState.settings.notificationFreq;
+      document.getElementById('autoSync').value = appState.settings.autoSync ? 'true' : 'false';
+      document.getElementById('refillReminder').value = appState.settings.refillReminder;
+      document.getElementById('leakThreshold').value = appState.settings.leakThreshold;
+      document.getElementById('lowPressureAlert').value = appState.settings.lowPressureAlert;
+      openModal('settingsModal');
+      closeMenu();
+    }
+
+    function openAboutModal() {
+      openModal('aboutModal');
+      closeMenu();
+    }
+
+    // Sign In Handler
+    function handleSignIn() {
+      const emailInput = document.getElementById('emailInput');
+      const passwordInput = document.getElementById('passwordInput');
+      const rememberCheckbox = document.getElementById('rememberMeCheckbox');
+      const signInMessage = document.getElementById('signInMessage');
+      const signInButton = document.getElementById('signInButton');
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const rememberMe = rememberCheckbox.checked;
+
+      emailInput.classList.remove('invalid');
+      passwordInput.classList.remove('invalid');
+      signInMessage.style.color = '#555';
+      signInMessage.innerText = 'Signing in...';
+      signInButton.disabled = true;
+
+      if (!email) {
+        emailInput.classList.add('invalid');
+        signInMessage.style.color = '#ef2b2b';
+        signInMessage.innerText = 'Email is required.';
+        signInButton.disabled = false;
+        return;
+      }
+
+      if (!validateEmail(email)) {
+        emailInput.classList.add('invalid');
+        signInMessage.style.color = '#ef2b2b';
+        signInMessage.innerText = 'Please enter a valid email address.';
+        signInButton.disabled = false;
+        return;
+      }
+
+      if (!password || password.length < 6) {
+        passwordInput.classList.add('invalid');
+        signInMessage.style.color = '#ef2b2b';
+        signInMessage.innerText = 'Password must be at least 6 characters long.';
+        signInButton.disabled = false;
+        return;
+      }
+
+      setTimeout(() => {
+        appState.isLoggedIn = true;
+        appState.rememberMe = rememberMe;
+        appState.userName = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1);
+        appState.userEmail = email;
+
+        saveAppState();
+
+        updateAuthUI();
+        signInMessage.style.color = '#2c9b65';
+        signInMessage.innerText = 'Signed in successfully!';
+        signInButton.disabled = false;
+        emailInput.value = '';
+        passwordInput.value = '';
+        rememberCheckbox.checked = false;
+        closeModal('signInModal');
+        showToast('Signed in successfully as ' + appState.userEmail, 'success');
+      }, 700);
+    }
+
+    // Sign Out Handler
+    function signOut() {
+      appState.isLoggedIn = false;
+      appState.rememberMe = false;
+      appState.userName = 'Guest User';
+      appState.userEmail = 'guest@example.com';
+      saveAppState();
+      updateAuthUI();
+      closeMenu();
+      showToast('Signed out successfully', 'info');
+    }
+
+    // Update Auth UI
+    function updateAuthUI() {
+      const userSection = document.getElementById('userSection');
+      const signInItem = document.getElementById('signInItem');
+      const signOutItem = document.getElementById('signOutItem');
+      const signInMessage = document.getElementById('signInMessage');
+
+      if (appState.isLoggedIn) {
+        userSection.style.display = 'block';
+        signInItem.style.display = 'none';
+        signOutItem.style.display = 'flex';
+        document.getElementById('userName').innerText = appState.userName;
+        document.getElementById('userEmail').innerText = appState.userEmail;
+        if (signInMessage) {
+          signInMessage.style.color = '#2c9b65';
+          signInMessage.innerText = `You are signed in as ${appState.userEmail}.`;
+        }
+      } else {
+        userSection.style.display = 'none';
+        signInItem.style.display = 'flex';
+        signOutItem.style.display = 'none';
+        if (signInMessage) {
+          signInMessage.style.color = '#555';
+          signInMessage.innerText = 'Enter your email and password to sync readings and personalize your dashboard.';
+        }
+      }
+    }
+
+    // Dark Mode Toggle
+    function toggleDarkMode() {
+      appState.darkMode = !appState.darkMode;
+      document.body.classList.toggle('dark-mode');
+      document.getElementById('darkModeToggle').classList.toggle('active');
+      localStorage.setItem('darkMode', appState.darkMode);
+    }
+
+    // Save Settings
+    function saveSettings() {
+      appState.settings.notificationFreq = document.getElementById('notificationFreq').value;
+      appState.settings.autoSync = document.getElementById('autoSync').value === 'true';
+      appState.settings.refillReminder = document.getElementById('refillReminder').value;
+      appState.settings.leakThreshold = parseFloat(document.getElementById('leakThreshold').value);
+      appState.settings.lowPressureAlert = parseFloat(document.getElementById('lowPressureAlert').value);
+
+      localStorage.setItem('notificationFreq', appState.settings.notificationFreq);
+      localStorage.setItem('autoSync', appState.settings.autoSync);
+      localStorage.setItem('refillReminder', appState.settings.refillReminder);
+      localStorage.setItem('leakThreshold', appState.settings.leakThreshold);
+      localStorage.setItem('lowPressureAlert', appState.settings.lowPressureAlert);
+
+      closeModal('settingsModal');
+      showToast('Settings saved successfully!', 'success');
+    }
+
+    // Daily Usage Generator
+    function generateDailyUsage() {
+      const dailyUsage = document.getElementById('dailyUsage');
+      const totalSpan = document.querySelector('.usage-box p span');
+
+      if (!appState.iotConnected) {
+        dailyUsage.innerHTML = `
+          <div class="daily-row">
+            <span>—</span>
+            <div class="progress"><div style="width:0%"></div></div>
+            <span>null</span>
+          </div>`;
+        if (totalSpan) totalSpan.innerText = 'null';
+        return;
+      }
+
+      const days = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      let totalUsage = 0;
+      dailyUsage.innerHTML = '';
+
+      days.forEach(day => {
+        const usage = Math.random() * 0.025;
+        totalUsage += usage;
+        const width = (usage / 0.025) * 100;
+        dailyUsage.innerHTML += `
+          <div class="daily-row">
+            <span>${day}</span>
+            <div class="progress"><div style="width:${width}%"></div></div>
+            <span>${usage > 0.001 ? usage.toFixed(3) + ' kg' : '—'}</span>
+          </div>`;
+      });
+
+      if (totalSpan) totalSpan.innerText = totalUsage.toFixed(3) + ' kg total';
+    }
+
+    // Cylinder Selection
+    function selectCylinder(card, weight) {
+      document.querySelectorAll('.cylinder-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      appState.selectedWeight = weight;
+      document.getElementById('selectedWeight').innerText = weight + ' kg';
+      document.getElementById('remaining').innerText = weight.toFixed(2) + ' kg';
+      document.getElementById('weightText').innerText = weight.toFixed(2) + ' kg left';
+      updateGaugeDisplay();
+    }
+
+    // Update Gauge Display
+    function updateGaugeDisplay() {
+      if (appState.readings.length > 0) {
+        const latest = appState.readings[0];
+        appState.currentPressure = latest.pressure;
+        const latestTime = latest.date.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        document.getElementById('latestReadingText').innerText = `${latest.pressure.toFixed(2)} bar`;
+        document.getElementById('latestReadingAge').innerText = `as of ${latestTime}`;
+      }
+
+      const percentage = Math.min((appState.currentPressure / appState.maxPressure) * 100, 100);
+      const remaining = (appState.selectedWeight / appState.maxPressure) * appState.currentPressure;
+      
+      document.getElementById('percent').innerText = percentage.toFixed(0) + '%';
+      document.getElementById('remaining').innerText = remaining.toFixed(2) + ' kg';
+      document.getElementById('weightText').innerText = remaining.toFixed(2) + ' kg left';
+      document.getElementById('pressure').innerText = appState.currentPressure.toFixed(2) + ' bar';
+
+      // Update gauge color
+      const gauge = document.querySelector('.gauge');
+      if (percentage > 70) {
+        gauge.style.borderColor = '#2c9b65';
+      } else if (percentage > 30) {
+        gauge.style.borderColor = '#f5a623';
+      } else {
+        gauge.style.borderColor = '#ef2b2b';
+      }
+
+      // Update status indicator
+      const statusSpan = document.querySelector('.section-title .green, .section-title .red');
+      if (statusSpan) {
+        if (percentage > 70) {
+          statusSpan.className = 'green';
+          statusSpan.innerText = '● Full';
+        } else if (percentage > 30) {
+          statusSpan.className = 'green';
+          statusSpan.innerText = '● Half';
+        } else {
+          statusSpan.className = 'red';
+          statusSpan.innerText = '● Low';
+        }
+      }
+
+      // Calculate and update metrics
+      updateMetrics();
+    }
+
+    // Calculate Metrics
+    function updateMetrics() {
+      const readings = appState.readings;
+      
+      if (readings.length >= 2) {
+        const latest = readings[0];
+        const oldest = readings[readings.length - 1];
+        const timeDiffHours = (latest.date - oldest.date) / (1000 * 60 * 60);
+        const pressureDrop = latest.pressure - oldest.pressure;
+        const usageRate = Math.abs(pressureDrop / timeDiffHours);
+
+        document.querySelectorAll('.metric-card')[0].innerHTML = 
+          `<div class="metric-label">Usage rate</div><div class="metric-value">${usageRate.toFixed(3)}</div><small>kg/day</small>`;
+
+        // Calculate recent drop
+        const recentDrop = pressureDrop;
+        document.querySelectorAll('.metric-card')[2].innerHTML = 
+          `<div class="metric-label">Recent drop</div><div class="metric-value">${Math.abs(recentDrop).toFixed(2)}</div><small>bar in ${Math.round(timeDiffHours * 60)} min</small>`;
+      }
+
+      // Average pressure
+      const avgPressure = (appState.readings.reduce((sum, r) => sum + r.pressure, 0) / appState.readings.length).toFixed(2);
+      document.querySelectorAll('.metric-card')[3].innerHTML = 
+        `<div class="metric-label">Avg pressure</div><div class="metric-value">${avgPressure}</div><small>bar · ${appState.readings.length} logs</small>`;
+
+      // Check for leak
+      checkLeakStatus();
+      
+      // Calculate forecast
+      calculateForecast();
+    }
+
+    // Check Leak Status
+    function checkLeakStatus() {
+      if (appState.readings.length < 2) return;
+
+      const latest = appState.readings[0];
+      const recentReadings = appState.readings.slice(0, Math.min(3, appState.readings.length));
+      const pressureDrops = [];
+
+      for (let i = 0; i < recentReadings.length - 1; i++) {
+        pressureDrops.push(Math.abs(recentReadings[i].pressure - recentReadings[i + 1].pressure));
+      }
+
+      const avgDrop = pressureDrops.reduce((a, b) => a + b, 0) / pressureDrops.length;
+      const hasLeak = avgDrop > appState.settings.leakThreshold;
+
+      const leakStatus = document.querySelector('.alert-card.green');
+      if (leakStatus) {
+        if (hasLeak) {
+          leakStatus.innerHTML = '<span class="red">⚠ Leak detected</span><br /><small style="color:#ef2b2b;">Pressure dropping rapidly.</small>';
+        } else {
+          leakStatus.innerHTML = '● <span class="green">No leak detected</span><br /><small>Pressure is stable.</small>';
+        }
+      }
+
+      const leakIndicator = document.querySelectorAll('.metric-value')[2];
+      if (leakIndicator) {
+        leakIndicator.innerHTML = hasLeak ? '<span class="red">⚠ Leak</span>' : '<span class="green">No leak</span>';
+      }
+    }
+
+    // Calculate Forecast
+    function calculateForecast() {
+      const readings = appState.readings;
+      if (readings.length < 2) {
+        document.querySelector('.alert-card.red').innerHTML = 'Estimated end date<br /><b>Need more readings</b>';
+        return;
+      }
+
+      const latest = readings[0];
+      const oldest = readings[readings.length - 1];
+      const pressureDiff = latest.pressure - oldest.pressure;
+      const timeDiffDays = (latest.date - oldest.date) / (1000 * 60 * 60 * 24);
+      
+      if (timeDiffDays === 0 || pressureDiff >= 0) {
+        document.querySelector('.alert-card.red').innerHTML = 'Estimated end date<br /><b>Not enough data</b>';
+        return;
+      }
+
+      const daysToEmpty = (latest.pressure / Math.abs(pressureDiff)) * timeDiffDays;
+      const endDate = new Date(latest.date.getTime() + daysToEmpty * 24 * 60 * 60 * 1000);
+      
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      const formattedDate = endDate.toLocaleDateString('en-US', options);
+      
+      document.querySelector('.alert-card.red').innerHTML = 
+        `Estimated end date<br /><b>${formattedDate}</b>`;
+    }
+
+    // Save Reading
+    async function saveReading(event) {
+      event.preventDefault();
+      const pressure = parseFloat(document.getElementById('pressureInput').value);
+      const date = new Date(document.getElementById('dateInput').value);
+
+      if (isNaN(pressure) || pressure < 0 || pressure > 20) {
+        showToast('Please enter a valid pressure value (0-20 bar)', 'error');
+        return;
+      }
+
+      appState.currentPressure = pressure;
+      appState.readings.unshift({ pressure, date });
+
+      // Save to server
+      try {
+        await fetch('/api/readings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pressure, date: date.toISOString() })
+        });
+      } catch (error) {
+        console.error('Failed to save reading:', error);
+      }
+
+      // Add to history
+      renderHistory();
+
+      // Update section title span
+      const span = document.querySelector('.history-box').closest('section').querySelector('.section-title span');
+      if (span) span.innerText = appState.readings.length + ' entries';
+
+      updateGaugeDisplay();
+      generatePressureChart();
+      updateLastReadingDisplay();
+      showToast('Reading saved successfully!', 'success');
+    }
+
+    // Add Current Reading
+    async function addCurrentReading() {
+      const pressure = parseFloat(document.getElementById('pressureInput').value);
+      const date = new Date();
+
+      if (isNaN(pressure) || pressure < 0 || pressure > 20) {
+        showToast('Please enter a valid pressure value (0-20 bar)', 'error');
+        return;
+      }
+
+      if (!appState.isLoggedIn) {
+        showToast('Sign in to sync readings and keep history in your profile.', 'info');
+      }
+
+      appState.currentPressure = pressure;
+      appState.readings.unshift({ pressure, date });
+
+      // Save to server
+      try {
+        await fetch('/api/readings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pressure, date: date.toISOString() })
+        });
+      } catch (error) {
+        console.error('Failed to save reading:', error);
+      }
+
+      // Add to history
+      renderHistory();
+
+      // Update section title span
+      const span = document.querySelector('.history-box').closest('section').querySelector('.section-title span');
+      if (span) span.innerText = appState.readings.length + ' entries';
+
+      updateGaugeDisplay();
+      generatePressureChart();
+      updateLastReadingDisplay();
+      showToast('Current reading added successfully!', 'success');
+    }
+
+    // Delete Reading
+    async function deleteReading(btn) {
+      const item = btn.closest('.history-item');
+      const pressureText = item.querySelector('b').innerText;
+      const pressureValue = parseFloat(pressureText);
+      
+      const index = appState.readings.findIndex(r => Math.abs(r.pressure - pressureValue) < 0.01);
+      if (index > -1) {
+        appState.readings.splice(index, 1);
+        try {
+          await fetch(`/api/readings/${index}`, { method: 'DELETE' });
+        } catch (error) {
+          console.error('Failed to delete reading:', error);
+        }
+      }
+
+      renderHistory();
+      
+      updateGaugeDisplay();
+      generatePressureChart();
+      updateLastReadingDisplay();
+    }
+
+    // Edit Reading
+    function editReading(btn) {
+      const item = btn.closest('.history-item');
+      const pressureElement = item.querySelector('b');
+      const currentPressure = parseFloat(pressureElement.innerText);
+      
+      // Create inline input for editing
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = currentPressure.toFixed(2);
+      input.min = '0';
+      input.max = '50';
+      input.step = '0.01';
+      input.style.width = '80px';
+      input.style.fontSize = '14px';
+      input.style.fontWeight = 'bold';
+      input.style.border = '1px solid #ddd';
+      input.style.borderRadius = '4px';
+      input.style.padding = '2px 4px';
+      
+      // Replace pressure text with input
+      pressureElement.parentNode.replaceChild(input, pressureElement);
+      input.focus();
+      input.select();
+      
+      // Handle save/cancel
+      const saveEdit = () => {
+        const newPressure = parseFloat(input.value);
+        if (isNaN(newPressure) || newPressure < 0 || newPressure > 50) {
+          showToast('Please enter a valid pressure between 0 and 50 bar.', 'error');
+          input.focus();
+          return;
+        }
+        
+        // Find and update the reading in appState
+        const index = appState.readings.findIndex(r => Math.abs(r.pressure - currentPressure) < 0.01);
+        if (index > -1) {
+          appState.readings[index].pressure = newPressure;
+          
+          // Update on server (this would need a PUT endpoint, for now just update locally)
+          try {
+            // Note: This assumes a PUT endpoint exists, you may need to add it to server.js
+            fetch(`/api/readings/${index}`, { 
+              method: 'PUT', 
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ pressure: newPressure })
+            }).catch(error => console.error('Failed to update reading:', error));
+          } catch (error) {
+            console.error('Failed to update reading:', error);
+          }
+        }
+        
+        // Replace input back with text
+        const newPressureElement = document.createElement('b');
+        newPressureElement.innerText = newPressure.toFixed(2) + ' bar';
+        input.parentNode.replaceChild(newPressureElement, input);
+        
+        updateGaugeDisplay();
+        generatePressureChart();
+        updateLastReadingDisplay();
+      };
+      
+      const cancelEdit = () => {
+        // Replace input back with original text
+        const originalPressureElement = document.createElement('b');
+        originalPressureElement.innerText = currentPressure.toFixed(2) + ' bar';
+        input.parentNode.replaceChild(originalPressureElement, input);
+      };
+      
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          saveEdit();
+        } else if (e.key === 'Escape') {
+          cancelEdit();
+        }
+      });
+      
+      input.addEventListener('blur', saveEdit);
+    }
+
+    // Toggle History Sort
+    let sortOrder = 'date-desc'; // date-desc, date-asc, pressure-desc, pressure-asc
+    function toggleHistorySort() {
+      const sortOptions = ['date-desc', 'date-asc', 'pressure-desc', 'pressure-asc'];
+      const currentIndex = sortOptions.indexOf(sortOrder);
+      sortOrder = sortOptions[(currentIndex + 1) % sortOptions.length];
+      
+      // Sort readings based on current sortOrder
+      appState.readings.sort((a, b) => {
+        switch (sortOrder) {
+          case 'date-desc':
+            return b.date - a.date;
+          case 'date-asc':
+            return a.date - b.date;
+          case 'pressure-desc':
+            return b.pressure - a.pressure;
+          case 'pressure-asc':
+            return a.pressure - b.pressure;
+          default:
+            return 0;
+        }
+      });
+      
+      renderHistory();
+    }
+
+    // Export History
+    function exportHistory() {
+      if (appState.readings.length === 0) {
+        showToast('No readings to export.', 'info');
+        return;
+      }
+      
+      const format = confirm('Export as CSV? (Cancel for JSON)') ? 'csv' : 'json';
+      let content, filename, mimeType;
+      
+      if (format === 'csv') {
+        const headers = 'Date,Pressure (bar)\n';
+        const rows = appState.readings.map(r => 
+          `${r.date.toISOString()},${r.pressure.toFixed(2)}`
+        ).join('\n');
+        content = headers + rows;
+        filename = 'lpg-readings.csv';
+        mimeType = 'text/csv';
+      } else {
+        content = JSON.stringify(appState.readings.map(r => ({
+          date: r.date.toISOString(),
+          pressure: r.pressure
+        })), null, 2);
+        filename = 'lpg-readings.json';
+        mimeType = 'application/json';
+      }
+      
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Clear History
+    function clearHistory() {
+      if (appState.readings.length === 0) {
+        showToast('No readings to clear.', 'info');
+        return;
+      }
+      
+      if (!confirm(`Are you sure you want to delete all ${appState.readings.length} readings? This action cannot be undone.`)) {
+        return;
+      }
+      
+      appState.readings = [];
+      
+      // Clear on server
+      try {
+        fetch('/api/readings', { method: 'DELETE' }).catch(error => 
+          console.error('Failed to clear readings on server:', error)
+        );
+      } catch (error) {
+        console.error('Failed to clear readings:', error);
+      }
+      
+      renderHistory();
+      updateGaugeDisplay();
+      generatePressureChart();
+      updateLastReadingDisplay();
+    }
+
+    // Generate Pressure Chart
+    function generatePressureChart() {
+      const readings = appState.readings.slice().reverse();
+      if (readings.length < 2) return;
+
+      const minPressure = Math.min(...readings.map(r => r.pressure));
+      const maxPressure = Math.max(...readings.map(r => r.pressure));
+      const range = maxPressure - minPressure || 1;
+      
+      // Calculate dynamic viewBox width based on number of readings
+      // Minimum width is 400, increases by 100 for every 5 readings beyond 4
+      const minReadingsForScroll = 5;
+      let viewBoxWidth = 400;
+      if (readings.length > minReadingsForScroll) {
+        viewBoxWidth = 400 + ((readings.length - minReadingsForScroll) * 70);
+      }
+      
+      let points = '';
+      let polygonPoints = '';
+      
+      readings.forEach((reading, index) => {
+        const x = 30 + (index / Math.max(readings.length - 1, 1)) * (viewBoxWidth - 60);
+        const y = 120 - ((reading.pressure - minPressure) / range) * 80;
+        points += `${x},${y} `;
+        if (index === 0) {
+          polygonPoints = `${x},${y} `;
+        } else if (index === readings.length - 1) {
+          polygonPoints += `${x},${y} ${viewBoxWidth - 30},120 30,120`;
+        } else {
+          polygonPoints += `${x},${y} `;
+        }
+      });
+
+      const svg = document.getElementById('pressureChart');
+      svg.setAttribute('viewBox', `0 0 ${viewBoxWidth} 150`);
+      
+      // Update grid lines
+      const lines = svg.querySelectorAll('line');
+      if (lines.length >= 1) {
+        lines[0].setAttribute('x2', viewBoxWidth - 30);
+        lines[1].setAttribute('x2', viewBoxWidth - 30);
+        lines[2].setAttribute('x2', viewBoxWidth - 30);
+      }
+      
+      const polyline = svg.getElementById('chartLine');
+      polyline.setAttribute('points', points.trim());
+      
+      const polygon = svg.getElementById('chartArea');
+      polygon.setAttribute('points', polygonPoints);
+
+      // Remove old circles
+      svg.querySelectorAll('circle[id^="reading"]').forEach(c => c.remove());
+
+      // Add new circles with smooth appearance
+      readings.forEach((reading, index) => {
+        const x = 30 + (index / Math.max(readings.length - 1, 1)) * (viewBoxWidth - 60);
+        const y = 120 - ((reading.pressure - minPressure) / range) * 80;
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', x);
+        circle.setAttribute('cy', y);
+        circle.setAttribute('r', 4);
+        circle.setAttribute('fill', '#ef2b2b');
+        circle.setAttribute('id', 'reading-' + index);
+        circle.style.transition = 'all 0.3s ease';
+        svg.appendChild(circle);
+      });
+      
+      // Update chart reading count
+      const countSpan = document.getElementById('chartReadingCount');
+      if (countSpan) {
+        countSpan.innerText = readings.length + ' reading' + (readings.length !== 1 ? 's' : '');
+      }
+      
+      // Auto-scroll to the right to show latest data
+      const chartContainer = document.getElementById('lineChartContainer');
+      if (chartContainer) {
+        setTimeout(() => {
+          chartContainer.scrollLeft = chartContainer.scrollWidth;
+        }, 50);
+      }
+    }
+
+    // Attach delete handlers to existing history items
+    function attachHistoryDeleteHandlers() {
+      document.querySelectorAll('.history-item span').forEach((span, index) => {
+        span.style.cursor = 'pointer';
+        span.onclick = async function() {
+          const item = this.closest('.history-item');
+          const pressureText = item.querySelector('b').innerText;
+          const pressureValue = parseFloat(pressureText);
+          
+          const historyIndex = appState.readings.findIndex(r => Math.abs(r.pressure - pressureValue) < 0.01);
+          if (historyIndex > -1) {
+            appState.readings.splice(historyIndex, 1);
+            try {
+              await fetch(`/api/readings/${historyIndex}`, { method: 'DELETE' });
+            } catch (error) {
+              console.error('Failed to delete reading:', error);
+            }
+          }
+          
+          item.remove();
+          const span = document.querySelector('.history-box').closest('section').querySelector('.section-title span');
+          if (span) span.innerText = appState.readings.length + ' entries';
+          updateGaugeDisplay();
+          generatePressureChart();
+          updateLastReadingDisplay();
+        };
+      });
+    }
+
+    // Chatbox Functions
+    function toggleChatbox() {
+      const chatbox = document.getElementById('chatboxContainer');
+      const toggleBtn = document.getElementById('chatboxToggleBtn');
+      
+      chatbox.classList.toggle('active');
+      toggleBtn.classList.toggle('hidden');
+      
+      if (chatbox.classList.contains('active')) {
+        document.getElementById('chatboxInput').focus();
+      }
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chatboxInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+      
+      // Add user message
+      addChatMessage(message, 'user');
+      input.value = '';
+      
+      // Simulate bot response after a delay
+      setTimeout(() => {
+        const botResponse = generateBotResponse(message);
+        addChatMessage(botResponse, 'bot');
+      }, 500);
+    }
+
+    function addChatMessage(message, sender) {
+      const messagesContainer = document.getElementById('chatboxMessages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `chat-message ${sender}`;
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.textContent = message;
+      
+      messageDiv.appendChild(bubble);
+      messagesContainer.appendChild(messageDiv);
+      
+      // Auto-scroll to bottom
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function handleChatKeypress(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChatMessage();
+      }
+    }
+
+    // Helper functions for chat actions
+    function selectCylinderBySize(size) {
+      const cylinders = document.querySelectorAll('.cylinder-card');
+      cylinders.forEach(card => card.classList.remove('active'));
+      
+      const targetCard = Array.from(cylinders).find(card => 
+        card.textContent.includes(size.toString())
+      );
+      if (targetCard) {
+        targetCard.classList.add('active');
+        selectCylinder(targetCard, size);
+      }
+    }
+
+    function clearAllReadings() {
+      if (confirm('Are you sure you want to clear all readings? This cannot be undone.')) {
+        appState.readings = [];
+        saveAppState();
+        renderHistory();
+        updateGaugeDisplay();
+        generatePressureChart();
+        updateLastReadingDisplay();
+      }
+    }
+
+    function addSimulatedReadings() {
+      const now = new Date();
+      const simulated = [];
+      for (let i = 0; i < 5; i++) {
+        const date = new Date(now.getTime() - (i * 2 * 60 * 60 * 1000)); // Every 2 hours
+        const pressure = 14.0 - (i * 0.5) + (Math.random() * 0.4 - 0.2); // Decreasing with noise
+        simulated.push({ pressure: Math.max(pressure, 0), date });
+      }
+      appState.readings = [...appState.readings, ...simulated];
+      saveAppState();
+      renderHistory();
+      updateGaugeDisplay();
+      generatePressureChart();
+      updateLastReadingDisplay();
+    }
+
+    function generateBotResponse(userMessage) {
+      const lowerMessage = userMessage.toLowerCase();
+      
+      // Action commands
+      if (lowerMessage.includes('add reading') || lowerMessage.includes('new reading')) {
+        setTimeout(() => {
+          document.getElementById('pressureInput').focus();
+          addChatMessage('Opening the "Add a reading" section for you...', 'bot');
+        }, 1000);
+        return 'Sure! Let me help you add a new pressure reading. 📊';
+      } else if (lowerMessage.includes('toggle dark') || lowerMessage.includes('dark mode on') || lowerMessage.includes('dark mode off')) {
+        setTimeout(() => {
+          toggleDarkMode();
+          addChatMessage('Dark mode toggled! 🌙', 'bot');
+        }, 500);
+        return 'Switching dark mode for you...';
+      } else if (lowerMessage.includes('open settings') || lowerMessage.includes('settings')) {
+        setTimeout(() => {
+          openSettingsModal();
+          addChatMessage('Settings panel opened! ⚙️', 'bot');
+        }, 500);
+        return 'Opening settings for you...';
+      } else if (lowerMessage.includes('export') || lowerMessage.includes('download')) {
+        setTimeout(() => {
+          exportHistory();
+          addChatMessage('Export started! 📁', 'bot');
+        }, 500);
+        return 'Exporting your readings...';
+      } else if (lowerMessage.includes('refresh') || lowerMessage.includes('update') || lowerMessage.includes('reload')) {
+        setTimeout(() => {
+          loadReadings();
+          updateGaugeDisplay();
+          generatePressureChart();
+          addChatMessage('Data refreshed! 🔄', 'bot');
+        }, 1000);
+        return 'Refreshing your data...';
+      } else if (lowerMessage.includes('clear history') || lowerMessage.includes('delete all')) {
+        if (confirm('Are you sure you want to clear all readings? This cannot be undone.')) {
+          setTimeout(() => {
+            clearAllReadings();
+            addChatMessage('All readings cleared! 🗑️', 'bot');
+          }, 500);
+        }
+        return 'Clearing all readings...';
+      } else if (lowerMessage.includes('simulate') || lowerMessage.includes('test data')) {
+        setTimeout(() => {
+          addSimulatedReadings();
+          addChatMessage('Added test readings! 🧪', 'bot');
+        }, 500);
+        return 'Adding simulated readings for testing...';
+      } else if (lowerMessage.includes('show metrics') || lowerMessage.includes('current status')) {
+        const pressure = appState.currentPressure.toFixed(2);
+        const remaining = ((appState.currentPressure / appState.maxPressure) * appState.selectedWeight).toFixed(2);
+        const status = appState.currentPressure > 12 ? 'Full' : appState.currentPressure > 8 ? 'Medium' : 'Low';
+        return `Current status: ${pressure} bar pressure, ${remaining} kg remaining (${status}) 📊`;
+      } else if (lowerMessage.includes('forecast') || lowerMessage.includes('when empty') || lowerMessage.includes('end date')) {
+        if (appState.readings.length < 2) {
+          return 'Need at least 2 readings for accurate forecasting. Add more readings to get predictions! 📈';
+        }
+        // Simple linear regression for forecast
+        const sorted = [...appState.readings].sort((a, b) => a.date - b.date);
+        const recent = sorted.slice(-3);
+        if (recent.length >= 2) {
+          const avgDrop = recent.reduce((sum, r, i) => {
+            if (i === 0) return sum;
+            const hours = (r.date - recent[i-1].date) / (1000 * 60 * 60);
+            return sum + (recent[i-1].pressure - r.pressure) / hours;
+          }, 0) / (recent.length - 1);
+          
+          if (avgDrop > 0) {
+            const hoursLeft = appState.currentPressure / avgDrop;
+            const endDate = new Date(Date.now() + hoursLeft * 60 * 60 * 1000);
+            return `Estimated empty in ${Math.round(hoursLeft)} hours (${endDate.toLocaleDateString()}) ⏰`;
+          }
+        }
+        return 'Calculating forecast... Need more data points for accurate prediction.';
+      } else if (lowerMessage.includes('leak check') || lowerMessage.includes('check leak')) {
+        const recent = appState.readings.slice(0, 2);
+        if (recent.length >= 2) {
+          const drop = recent[0].pressure - recent[1].pressure;
+          const timeDiff = (recent[0].date - recent[1].date) / (1000 * 60);
+          const dropRate = drop / timeDiff;
+          
+          if (dropRate > appState.settings.leakThreshold) {
+            return `⚠️ Possible leak detected! Pressure dropped ${drop.toFixed(2)} bar in ${Math.round(timeDiff)} minutes.`;
+          } else {
+            return `✅ No leak detected. Pressure is stable (${dropRate.toFixed(3)} bar/min drop rate).`;
+          }
+        }
+        return 'Need at least 2 readings to check for leaks.';
+      } else if (lowerMessage.includes('usage rate') || lowerMessage.includes('consumption')) {
+        if (appState.readings.length >= 2) {
+          const sorted = [...appState.readings].sort((a, b) => b.date - a.date);
+          const first = sorted[sorted.length - 1];
+          const last = sorted[0];
+          const days = (last.date - first.date) / (1000 * 60 * 60 * 24);
+          const totalDrop = first.pressure - last.pressure;
+          const dailyDrop = totalDrop / days;
+          const kgPerDay = (dailyDrop / appState.maxPressure) * appState.selectedWeight;
+          
+          return `Usage rate: ${kgPerDay.toFixed(2)} kg/day (${dailyDrop.toFixed(2)} bar/day) 📉`;
+        }
+        return 'Need more readings to calculate usage rate.';
+      } else if (lowerMessage.includes('help') || lowerMessage.includes('commands') || lowerMessage.includes('what can you do')) {
+        return `I can help with: 
+• "add reading" - Open add reading form
+• "toggle dark" - Switch dark mode
+• "open settings" - Open settings panel  
+• "export" - Export readings data
+• "refresh" - Reload all data
+• "clear history" - Delete all readings
+• "simulate" - Add test data
+• "show metrics" - Current status
+• "forecast" - When cylinder empty
+• "leak check" - Check for leaks
+• "usage rate" - Daily consumption
+• "select [size]" - Change cylinder (5kg, 14.2kg, 19kg, 47.5kg)
+What would you like to do? 🤖`;
+      } else if (lowerMessage.match(/select (\d+(\.\d+)?)kg?/)) {
+        const match = lowerMessage.match(/select (\d+(\.\d+)?)kg?/);
+        const size = parseFloat(match[1]);
+        const validSizes = [5, 14.2, 19, 47.5];
+        if (validSizes.includes(size)) {
+          setTimeout(() => {
+            selectCylinderBySize(size);
+            addChatMessage(`Cylinder size changed to ${size} kg! 🛢️`, 'bot');
+          }, 500);
+          return `Switching to ${size} kg cylinder...`;
+        }
+        return `Available sizes: 5kg, 14.2kg, 19kg, 47.5kg`;
+      }
+      
+      // Simple keyword-based responses
+      if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+        return 'Hey! How can I help you today with your cylinder tracking? 😊';
+      } else if (lowerMessage.includes('pressure') || lowerMessage.includes('reading')) {
+        return 'You can add new pressure readings using the "Add a reading" section. Just enter the bar value and timestamp, then click "Save reading".';
+      } else if (lowerMessage.includes('leak')) {
+        return 'Leak detection monitors pressure drops. If there\'s a sudden pressure loss, you\'ll see a leak alert in the Forecast & safety section.';
+      } else if (lowerMessage.includes('history')) {
+        return 'You can export your readings as CSV or JSON using the export button in the History section. You can also sort by date or pressure!';
+      } else if (lowerMessage.includes('settings')) {
+        return 'Settings let you customize notifications, auto-sync, refill reminders, and leak/pressure alert thresholds.';
+      } else if (lowerMessage.includes('dark mode')) {
+        return 'Dark mode is available in the menu! It reduces eye strain in low-light environments.';
+      } else if (lowerMessage.includes('thank')) {
+        return 'You\'re welcome! Let me know if you need any other help. 🙌';
+      } else {
+        const responses = [
+          'I\'m not sure about that, but I can help with pressure readings, leak detection, forecasting, and more! What would you like to know?',
+          'Can you be more specific? Ask me about readings, leaks, forecasts, or settings!',
+          'That\'s a great question! Try asking about features like adding readings, viewing history, or exporting data.',
+          'I\'m here to help! Try asking about how to use different features of Saathi.'
+        ];
+        return responses[Math.floor(Math.random() * responses.length)];
+      }
+    }
+
+    // Start the app
+    initialize();
+  </script>
+</body>
+</html>
